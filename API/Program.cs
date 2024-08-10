@@ -2,7 +2,7 @@ using API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.ConfigureServices();
+builder.ConfigureBuilder();
 builder.ConfigureAuthentication();
 builder.ConfigureSwagger();
 

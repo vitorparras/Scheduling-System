@@ -1,16 +1,16 @@
-﻿namespace API.Endpoints
+﻿using Application.Services.Interfaces;
+
+namespace API.Endpoints
 {
     public static class AuthEndpoints
     {
         public static void MapAuthEndpoints(this IEndpointRouteBuilder app)
         {
-            var users = app.MapGroup("/api");
+            var users = app.MapGroup("/api/auth");
 
-            users.MapGet("", () => "Collections.Users");
+            users.MapPost("/Login", async (string email, string password,IAuthService authService) => await authService.LoginAsync(email, password));
 
-            users.MapGet("/{id}", (int id) => "Collections.Users");
-                  
-            users.MapPost("", () => "Collections.Users.Add(user))");
+            users.MapPost("/Logout", async (string token, IAuthService authService) => await authService.LogoutAsync(token));
         }
     }
 }
