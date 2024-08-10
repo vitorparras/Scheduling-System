@@ -2,7 +2,7 @@
 {
     public static class DependencyInjectionExtensions
     {
-        public static WebApplicationBuilder AddServices(this WebApplicationBuilder builder)
+        public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
         {
             builder.Services
                   .AddEndpointsApiExplorer()
@@ -11,7 +11,7 @@
             return builder;
         }
 
-        public static void AddMiddlewares(this WebApplication app)
+        public static void ConfigureMiddlewares(this WebApplication app)
         {
             if (app.Environment.IsDevelopment())
             {

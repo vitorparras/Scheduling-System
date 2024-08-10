@@ -1,14 +1,14 @@
-using API.Controllers;
 using API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServices();
+builder.ConfigureServices();
+builder.ConfigureAuthentication();
+builder.ConfigureSwagger();
 
 var app = builder.Build();
 
-app.AddMiddlewares();
-
-app.AddEndpoints();
+app.ConfigureMiddlewares();
+app.ConfigureEndpoints();
 
 app.Run();
