@@ -15,16 +15,17 @@ namespace Infrastructure.Repository
             _dbSet = _dbContext.Set<TEntity>();
         }
 
-        public async Task<TEntity> GetByIdAsync(int id) => await _dbSet.FindAsync(id);
+        public async Task<IEnumerable<TEntity>> GetAllAsync() =>
+            await _dbSet.ToListAsync();
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync() => await _dbSet.ToListAsync();
+        public async Task<IEnumerable<TEntity>> ListAsync(Expression<Func<TEntity, bool>> predicate) =>
+            await _dbSet.Where(predicate).ToListAsync();
 
-        public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate) => await _dbSet.Where(predicate).ToListAsync();
+        public async Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate) =>
+            await _dbSet.FirstOrDefaultAsync(predicate);
 
-        public async Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate) => await _dbSet.Where(predicate).FirstOrDefaultAsync();
-
-        public async Task<int> SaveChangesAsync() => await _dbContext.SaveChangesAsync();
-
+        public async Task<int> SaveChangesAsync() =>
+            await _dbContext.SaveChangesAsync();
 
         public async Task<TEntity> AddAsync(TEntity entity)
         {
@@ -40,15 +41,15 @@ namespace Infrastructure.Repository
             return entity;
         }
 
-        public async Task RemoveAsync(TEntity entity)
+        public async Task<bool> RemoveAsync(TEntity entity)
         {
             _dbSet.Remove(entity);
-            await SaveChangesAsync();
+            return await SaveChangesAsync() > 0;
         }
 
-        public async Task<TEntity> FromSqlRaw(string sql)
-        {
-            return await _dbSet.FromSqlRaw(sql).FirstOrDefaultAsync();
-        }
+        public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate) => await _dbSet.AnyAsync(predicate);
+
+
+
     }
 }

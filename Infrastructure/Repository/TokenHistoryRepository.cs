@@ -3,30 +3,25 @@ using Infrastructure.Repository.Interface;
 
 namespace Infrastructure.Repository
 {
-    public class TokenHistoryRepository : GenericRepository<User>, ITokenHistoryRepository
+    public class TokenHistoryRepository : GenericRepository<TokenHistory>, ITokenHistoryRepository
     {
         public TokenHistoryRepository(DxContext dbContext) : base(dbContext)
         {
         }
 
-        public Task AddTokenHistoryAsync(TokenHistory tokenHistory)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TokenHistory> GetTokenHistoryAsync(string token)
-        {
-            throw new NotImplementedException();
-        }
+        public async Task<TokenHistory?> GetTokenHistoryAsync(string token) =>
+            await FirstOrDefaultAsync(t => t.Token.Equals(token));
 
         public Task InvalidateTokenAsync(TokenHistory tokenHistory)
         {
-            throw new NotImplementedException();
+            tokenHistory.IsValid = false;
+            return UpdateAsync(tokenHistory);
         }
 
-        public Task<bool> IsTokenValidAsync(string token)
+        public async Task<bool> IsTokenValidAsync(string token)
         {
-            throw new NotImplementedException();
+            var exist = await GetTokenHistoryAsync(token);
+            return (exist != null && exist.IsValid);
         }
     }
 }
