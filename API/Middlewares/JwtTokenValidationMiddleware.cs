@@ -15,8 +15,7 @@ namespace API.Middlewares
 
         public async Task InvokeAsync(HttpContext context)
         {
-            if (context.Request.Path.Equals("/api/auth/Login", StringComparison.OrdinalIgnoreCase) ||
-                context.Request.Path.Equals("/api/users/add", StringComparison.OrdinalIgnoreCase))
+            if (context.Request.Path.Equals("/api/auth/login", StringComparison.OrdinalIgnoreCase)) 
             {
                 await _next(context);
                 return;
