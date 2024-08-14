@@ -6,11 +6,11 @@ namespace API.Endpoints
     {
         public static void MapAuthEndpoints(this IEndpointRouteBuilder app)
         {
-            var users = app.MapGroup("/api/auth");
+            var auth = app.MapGroup("/api/auth").WithTags("AUTH");
 
-            users.MapPost("/Login", async (string email, string password,IAuthService authService) => await authService.LoginAsync(email, password));
+            auth.MapPost("/Login", async (string email, string password,IAuthService authService) => await authService.LoginAsync(email, password));
 
-            users.MapPost("/Logout", async (string token, IAuthService authService) => await authService.LogoutAsync(token));
+            auth.MapPost("/Logout", async (string token, IAuthService authService) => await authService.LogoutAsync(token));
         }
     }
 }

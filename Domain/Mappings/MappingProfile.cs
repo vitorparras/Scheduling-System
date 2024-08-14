@@ -10,6 +10,9 @@ namespace Domain.Mappings
         {
             CreateMap<User, UserDTO>()
                 .ReverseMap();
+            
+            CreateMap<User, UserAddDTO>()
+                .ReverseMap();
         }
     }
 }

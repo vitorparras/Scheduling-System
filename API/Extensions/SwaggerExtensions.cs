@@ -35,6 +35,7 @@ namespace API.Extensions
                         new string[] { }
                     }
                 });
+                c.EnableAnnotations();
             });
         }
     }

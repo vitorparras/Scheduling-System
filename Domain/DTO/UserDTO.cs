@@ -9,6 +9,9 @@
 
     public class UserAddDTO: UserDTO
     {
+        public string Tel { get; set; }
+        public string Cep { get; set; }
+        public string CPF { get; set; }
         public string Password { get; set; }
     }
 }

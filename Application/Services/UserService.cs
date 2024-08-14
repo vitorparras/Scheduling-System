@@ -102,6 +102,8 @@ namespace Application.Services
                 var exist = await _userRepository.FirstOrDefaultAsync(x => x.Email.Contains(user.Email, StringComparison.OrdinalIgnoreCase));
                 if (exist != null) return new GenericResponse<UserDTO>("User already exists", false);
 
+                user.Password = userDto.Password;
+
                 var added = await _userRepository.AddAsync(user);
                 return added != null ?
                     new GenericResponse<UserDTO>(_mapper.Map<UserDTO>(user)) :
@@ -118,16 +120,16 @@ namespace Application.Services
             try
             {
                 ArgumentNullException.ThrowIfNull(userDto);
-                var user = _mapper.Map<User>(userDto);
 
-                var exist = await _userRepository.FirstOrDefaultAsync(x => x.Id == user.Id);
+                var exist = await _userRepository.FirstOrDefaultAsync(x => x.Id == userDto.Id);
                 if (exist is null) return new GenericResponse<UserDTO>("User not found", false);
 
-                user.Password ??= exist.Password;
+                exist.Name ??= userDto.Name;
+                exist.Email ??= userDto.Email;
 
-                var updated = await _userRepository.UpdateAsync(user);
+                var updated = await _userRepository.UpdateAsync(exist);
                 return updated != null ?
-                    new GenericResponse<UserDTO>(_mapper.Map<UserDTO>(user)) :
+                    new GenericResponse<UserDTO>(_mapper.Map<UserDTO>(exist)) :
                     new GenericResponse<UserDTO>("An error occurred while updating the user", false);
             }
             catch (Exception ex)
