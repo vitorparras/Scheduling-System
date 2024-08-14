@@ -6,6 +6,7 @@ builder.ConfigureBuilder();
 builder.ConfigureAuthentication();
 builder.ConfigureSwagger();
 
+
 var app = builder.Build();
 
 app.ConfigureMiddlewares();

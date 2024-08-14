@@ -1,5 +1,6 @@
 ﻿using Application.Services;
 using Application.Services.Interfaces;
+using Domain.Mappings;
 using Infrastructure;
 using Infrastructure.Repository;
 using Infrastructure.Repository.Interface;
@@ -16,6 +17,7 @@ namespace API.Extensions
 
             builder.ConfigureContext();
             builder.ConfigureRepositories();
+            builder.ConfigureAutoMapper();
             builder.ConfigureServices();
 
             return builder;
@@ -52,6 +54,13 @@ namespace API.Extensions
         public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
         {
             builder.Services.AddScoped<IAuthService, AuthService>();
+
+            return builder;
+        }
+
+        public static WebApplicationBuilder ConfigureAutoMapper(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddAutoMapper(typeof(MappingProfile));
 
             return builder;
         }
