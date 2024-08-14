@@ -1,6 +1,7 @@
 ﻿using Domain.Model.Bases;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Domain.Enum;
 
 namespace Domain.Model
 {
@@ -47,10 +48,8 @@ namespace Domain.Model
 
         /// <summary>
         /// Status of the appointment.
-        /// Can be 'Scheduled', 'Completed', or 'Cancelled'.
         /// </summary>
         [Required]
-        [StringLength(20)]
-        public string Status { get; set; }
+        public AppointmentStatus Status { get; set; }
     }
 }

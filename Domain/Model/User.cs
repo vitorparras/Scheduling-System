@@ -43,7 +43,6 @@ namespace Domain.Model
 
         /// <summary>
         /// Roles of the user in the system.
-        /// Can be 'Client', 'Admin' or 'Employee'.
         /// </summary>
         public ICollection<UserRolesEnum> Roles { get; set; }
     }
