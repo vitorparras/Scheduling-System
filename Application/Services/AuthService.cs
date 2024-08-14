@@ -1,4 +1,5 @@
 ﻿using Application.Services.Interfaces;
+using Domain.DTO;
 using Domain.Model;
 using Infrastructure.Repository.Interface;
 using Microsoft.Extensions.Configuration;
@@ -11,59 +12,91 @@ namespace Application.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
         private readonly ITokenHistoryRepository _tokenHistoryRepository;
         private readonly IConfiguration _configuration;
 
-        public AuthService(IUserRepository userRepository, ITokenHistoryRepository tokenHistoryRepository, IConfiguration configuration)
+        public AuthService(
+            ITokenHistoryRepository tokenHistoryRepository,
+            IConfiguration configuration,
+            IUserService userService)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _tokenHistoryRepository = tokenHistoryRepository ?? throw new ArgumentNullException(nameof(tokenHistoryRepository));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
-        public async Task<string> LoginAsync(string email, string password)
+        public async Task<GenericResponse<string>> LoginAsync(string email, string password)
         {
-            var user = await _userRepository.GetUserByEmailAsync(email);
-            if (user == null || !VerifyPassword(user, password))
-            {
-                throw new UnauthorizedAccessException("Invalid email or password.");
-            }
-
-            var token = GenerateJwtToken(user);
-            await SaveTokenToHistoryAsync(user.Id, token);
-            return token;
-        }
-
-        public async Task LogoutAsync(string token)
-        {
-            var tokenHistory = await _tokenHistoryRepository.GetTokenHistoryAsync(token) ?? throw new UnauthorizedAccessException("Invalid token.");
-            await _tokenHistoryRepository.InvalidateTokenAsync(tokenHistory);
-        }
-
-        private string GenerateJwtToken(User user)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity([
-                    new Claim(ClaimTypes.Name, user.Id.ToString()),
-                    new Claim(ClaimTypes.Email, user.Email)
-                ]),
-                Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
-        }
-
-        public bool TokenIsValid(string token)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
             try
             {
+                var user = await _userService.GetByEmailAsync(email);
+                if (!user.Success) return new GenericResponse<string>(user.Erros);
+
+                var passValid = await _userService.VerifyPasswordAsync(user.Data, password);
+                if (!passValid.Success) return new GenericResponse<string>(passValid.Erros);
+
+                var token = GenerateJwtToken(user.Data);
+                if (!token.Success) return new GenericResponse<string>(token.Erros);
+
+                var tokenHistory = await SaveTokenToHistoryAsync(user.Data.Id, token.Data);
+                if (!tokenHistory.Success) return new GenericResponse<string>(tokenHistory.Erros);
+
+                return token;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occurred while retrieving the user by email", ex);
+            }
+        }
+
+        public async Task<GenericResponse<string>> LogoutAsync(string token)
+        {
+            try
+            {
+                var tokenHistory = await _tokenHistoryRepository.GetTokenHistoryAsync(token) ?? throw new UnauthorizedAccessException("Invalid token.");
+                if (tokenHistory is null) return new GenericResponse<string>("Token Not Found", false);
+
+                await _tokenHistoryRepository.InvalidateTokenAsync(tokenHistory);
+
+                return new GenericResponse<string>("User logged out successfully");
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occurred while we try to log the user out", ex);
+            }
+        }
+
+        private GenericResponse<string> GenerateJwtToken(UserDTO user)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity([
+                        new Claim(ClaimTypes.Name, user.Id.ToString()),
+                        new Claim(ClaimTypes.Email, user.Email)
+                    ]),
+                    Expires = DateTime.UtcNow.AddHours(1),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                };
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                return new GenericResponse<string>(tokenHandler.WriteToken(token));
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occurred while we try to generate jwt token", ex);
+            }
+        }
+
+        public async Task<GenericResponse<bool>> TokenIsValid(string token)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
                 tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
@@ -73,32 +106,38 @@ namespace Application.Services
                     ClockSkew = TimeSpan.Zero
                 }, out SecurityToken validatedToken);
 
-                return validatedToken != null && _tokenHistoryRepository.IsTokenValidAsync(token).Result;
+                var tokenValid = await _tokenHistoryRepository.IsTokenValidAsync(token);
+
+                return new GenericResponse<bool>(validatedToken != null && tokenValid);
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                throw new ApplicationException("An error occurred while we try to generate jwt token", ex);
             }
         }
 
-        private async Task SaveTokenToHistoryAsync(Guid userId, string token)
+        private async Task<GenericResponse<TokenHistory>> SaveTokenToHistoryAsync(Guid userId, string token)
         {
-            var tokenHistory = new TokenHistory
+            try
             {
-                UserId = userId,
-                Token = token,
-                CreatedAt = DateTime.UtcNow,
-                IsValid = true
-            };
+                var tokenHistory = new TokenHistory
+                {
+                    UserId = userId,
+                    Token = token,
+                    CreatedAt = DateTime.UtcNow,
+                    IsValid = true
+                };
 
-            await _tokenHistoryRepository.AddTokenHistoryAsync(tokenHistory);
-        }
+                var add = await _tokenHistoryRepository.AddAsync(tokenHistory);
 
-        private bool VerifyPassword(User user, string password)
-        {
-            // TODO 
-            //Implement password verification logic, hash comparison
-            return user.Password == password;
+                return (add != null) ?
+                    new GenericResponse<TokenHistory>(add) :
+                    new GenericResponse<TokenHistory>("TokenHistory not saved", false);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occurred while Save TokenToHistory", ex);
+            }
         }
     }
 }

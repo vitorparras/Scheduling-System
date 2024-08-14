@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Domain.DTO;
 
 namespace Application.Services.Interfaces
 {
     public interface IAuthService
     {
-        Task<string> LoginAsync(string email, string password);
-        Task LogoutAsync(string token);
-        bool TokenIsValid(string token);
+        Task<GenericResponse<string>> LoginAsync(string email, string password);
+        Task<GenericResponse<string>> LogoutAsync(string token);
+        Task<GenericResponse<bool>> TokenIsValid(string token);
     }
 }
