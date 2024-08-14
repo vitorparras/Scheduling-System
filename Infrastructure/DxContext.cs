@@ -7,27 +7,27 @@ namespace Infrastructure
     {
         public DxContext(DbContextOptions<DxContext> options) : base(options) { }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder
-                  .UseInMemoryDatabase("Teste")
-                  .EnableSensitiveDataLogging();
-            }
-        }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<User>().HasData(
+                new User
+                {
+                    Id = Guid.NewGuid(),
+                    Email = "teste@teste.com",
+                    CreatedAt = DateTime.Now,
+                    Cep = "123",
+                    CPF = "123",
+                    Name = "teste",
+                    Password = "123456",
+                    Tel = "123",
+                });
         }
 
-        #region Sistema
         public DbSet<TokenHistory> TokenHistories { get; set; }
 
         public DbSet<User> Users { get; set; }
 
-        #endregion
     }
 }

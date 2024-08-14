@@ -5,6 +5,7 @@ using Domain.Mappings;
 using Infrastructure;
 using Infrastructure.Repository;
 using Infrastructure.Repository.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Extensions
 {
@@ -35,8 +36,16 @@ namespace API.Extensions
             app.UseMiddleware<JwtTokenValidationMiddleware>();
 
             app.UseHttpsRedirection();
+
+            app.ImplementMigrations();
         }
 
+        public static void ImplementMigrations(this WebApplication app)
+        {
+            using var scope = app.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<DxContext>();
+            dbContext.Database.Migrate();
+        }
 
         public static WebApplicationBuilder ConfigureRepositories(this WebApplicationBuilder builder)
         {
@@ -49,11 +58,17 @@ namespace API.Extensions
 
         public static WebApplicationBuilder ConfigureContext(this WebApplicationBuilder builder)
         {
-            builder.Services.AddDbContext<DxContext>();
+            var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+            builder.Services.AddDbContext<DxContext>(options => options
+                .UseMySql(connString, ServerVersion.AutoDetect(connString), options =>
+                {
+                    options.EnableStringComparisonTranslations();
+                })
+                .EnableSensitiveDataLogging());
 
             return builder;
         }
-        
+
         public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
         {
             builder.Services.AddScoped<IAuthService, AuthService>();
@@ -68,5 +83,7 @@ namespace API.Extensions
 
             return builder;
         }
+
+
     }
 }
