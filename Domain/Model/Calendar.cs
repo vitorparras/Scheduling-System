@@ -5,11 +5,9 @@ namespace Domain.Model
 {
     public class Calendar: BaseEntity
     {
-        /// <summary>
-        /// Identifier of the store associated with the calendar.
-        /// </summary>
-        [ForeignKey("Store")]
-        public Guid StoreID { get; set; }
-        public Store Store { get; set; }
+        public Guid StoreId { get; set; }
+
+        [ForeignKey(nameof(StoreId))]
+        public virtual Store Store { get; set; }
     }
 }

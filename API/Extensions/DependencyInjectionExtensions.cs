@@ -43,7 +43,7 @@ namespace API.Extensions
         public static void ImplementMigrations(this WebApplication app)
         {
             using var scope = app.Services.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<DxContext>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<SchedulerContext>();
             dbContext.Database.Migrate();
         }
 
@@ -59,7 +59,7 @@ namespace API.Extensions
         public static WebApplicationBuilder ConfigureContext(this WebApplicationBuilder builder)
         {
             var connString = builder.Configuration.GetConnectionString("DefaultConnection");
-            builder.Services.AddDbContext<DxContext>(options => options
+            builder.Services.AddDbContext<SchedulerContext>(options => options
                 .UseMySql(connString, ServerVersion.AutoDetect(connString), options =>
                 {
                     options.EnableStringComparisonTranslations();

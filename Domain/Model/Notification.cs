@@ -4,28 +4,22 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Model
 {
-    public class TokenHistory : BaseEntity
+    public class Notification : BaseEntity
     {
         [Required]
         public Guid UserId { get; set; }
 
         [Required]
-        public string Token { get; set; }
+        public string Message { get; set; }
 
         [Required]
-        public bool IsValid { get; set; }
+        public bool IsRead { get; set; }
 
         [Required]
-        public DateTime ExpiryDate { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         [ForeignKey(nameof(UserId))]
         public virtual User User { get; set; }
-
-        public virtual LoginHistory LoginHistory { get; set; }
-
-        public bool IsExpired()
-        {
-            return DateTime.UtcNow > ExpiryDate;
-        }
     }
+
 }

@@ -6,44 +6,33 @@ namespace Domain.Model
 {
     public class User : BaseEntity
     {
-        /// <summary>
-        /// Unique identifier for the user.
-        /// </summary>
-        [Key]
-        public int UserID { get; set; }
-
-        /// <summary>
-        /// Name of the user.
-        /// </summary>
-        [Required]
-        [StringLength(100)]
+        [Required, MaxLength(100)]
         public string Name { get; set; }
 
-        /// <summary>
-        /// Email of the user.
-        /// </summary>
-        [Required]
-        [EmailAddress]
-        [StringLength(100)]
+        [Required, EmailAddress, MaxLength(100)]
         public string Email { get; set; }
 
-        /// <summary>
-        /// Hash of the user's password.
-        /// </summary>
-        [Required]
-        [StringLength(255)]
-        public string Password { get; set; } 
-        
-        /// <summary>
-        /// Hash of the user's password.
-        /// </summary>
-        [Required]
-        [StringLength(14)]
+        [Required, MaxLength(255)]
+        public string Password { get; set; }
+
+        [Required, MaxLength(14)]
         public string CPF { get; set; }
 
-        /// <summary>
-        /// Roles of the user in the system.
-        /// </summary>
-        public ICollection<UserRolesEnum> Roles { get; set; }
+        [Required]
+        public UserRolesEnum Roles { get; set; } = UserRolesEnum.None;
+
+        
+
+        public virtual ICollection<TokenHistory> TokenHistories { get; set; } = new List<TokenHistory>();
+
+        public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
+        public virtual ICollection<LoginHistory> LoginHistories { get; set; } = new List<LoginHistory>();
+
+
+        public bool HasRole(UserRolesEnum role)
+        {
+            return (Roles & role) == role;
+        }
     }
 }

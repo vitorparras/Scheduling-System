@@ -1,55 +1,41 @@
-﻿using Domain.Model.Bases;
+﻿using Domain.Enum;
+using Domain.Model.Bases;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using Domain.Enum;
 
 namespace Domain.Model
 {
     public class Appointment : BaseEntity
     {
-        /// <summary>
-        /// Identifier of the store associated with the appointment.
-        /// </summary>
-        [ForeignKey("Store")]
-        public Guid StoreID { get; set; }
-        public Store Store { get; set; }
-
-        /// <summary>
-        /// Identifier of the employee associated with the appointment.
-        /// </summary>
-        [ForeignKey("Employee")]
-        public Guid EmployeeID { get; set; }
-        public Employee Employee { get; set; }
-
-        /// <summary>
-        /// Identifier of the client associated with the appointment.
-        /// </summary>
-        [ForeignKey("Client")]
-        public Guid ClientID { get; set; }
-        public User Client { get; set; }
-
-        /// <summary>
-        /// Date of the appointment.
-        /// </summary>
-        [Required]
         public DateTime Date { get; set; }
 
-        /// <summary>
-        /// Start time of the appointment.
-        /// </summary>
-        [Required]
         public TimeSpan StartTime { get; set; }
 
-        /// <summary>
-        /// End time of the appointment.
-        /// </summary>
-        [Required]
         public TimeSpan EndTime { get; set; }
 
-        /// <summary>
-        /// Status of the appointment.
-        /// </summary>
-        [Required]
         public AppointmentStatus Status { get; set; }
+
+
+        public Guid StoreId { get; set; }
+        public Guid EmployeeId { get; set; }
+        public Guid ClientId { get; set; }
+
+
+        [ForeignKey(nameof(ClientId))]
+        public virtual User Client { get; set; }
+
+        [ForeignKey(nameof(EmployeeId))]
+        public virtual Employee Employee { get; set; }
+
+        [ForeignKey(nameof(StoreId))]
+        public virtual Store Store { get; set; }
+
+
+        [InverseProperty(nameof(AppointmentHistory.Appointment))]
+        public virtual ICollection<AppointmentHistory> History { get; set; } = new List<AppointmentHistory>();
+
+        public string DescriptionAppointment()
+        {
+            return $"{Date.ToShortDateString()} from {StartTime} to {EndTime} - Status: {Status}";
+        }
     }
 }
