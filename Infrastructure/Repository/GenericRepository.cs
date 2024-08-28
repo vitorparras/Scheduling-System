@@ -6,10 +6,10 @@ namespace Infrastructure.Repository
 {
     public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : class
     {
-        private readonly DxContext _dbContext;
+        private readonly SchedulerContext _dbContext;
         public readonly DbSet<TEntity> _dbSet;
 
-        public GenericRepository(DxContext dbContext)
+        public GenericRepository(SchedulerContext dbContext)
         {
             _dbContext = dbContext;
             _dbSet = _dbContext.Set<TEntity>();

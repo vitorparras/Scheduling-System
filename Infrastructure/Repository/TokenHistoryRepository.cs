@@ -5,7 +5,7 @@ namespace Infrastructure.Repository
 {
     public class TokenHistoryRepository : GenericRepository<TokenHistory>, ITokenHistoryRepository
     {
-        public TokenHistoryRepository(DxContext dbContext) : base(dbContext)
+        public TokenHistoryRepository(SchedulerContext dbContext) : base(dbContext)
         {
         }
 

@@ -5,7 +5,7 @@ namespace Infrastructure.Repository
 {
     public class UserRepository : GenericRepository<User>, IUserRepository
     {
-        public UserRepository(DxContext dbContext) : base(dbContext)
+        public UserRepository(SchedulerContext dbContext) : base(dbContext)
         {
         }
 

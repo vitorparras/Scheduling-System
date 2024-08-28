@@ -124,7 +124,6 @@ namespace Application.Services
                 {
                     UserId = userId,
                     Token = token,
-                    CreatedAt = DateTime.UtcNow,
                     IsValid = true
                 };
 
