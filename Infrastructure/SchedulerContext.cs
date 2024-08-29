@@ -1,5 +1,7 @@
 ﻿using Domain.Model;
+using Domain.Model.Bases;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata;
 
 namespace Infrastructure
 {
@@ -10,7 +12,7 @@ namespace Infrastructure
         }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<TokenHistory> TokenHistories { get; set; }
+        public DbSet<LoginHistory> LoginHistories { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<AppointmentHistory> AppointmentHistories { get; set; }
         public DbSet<Calendar> Calendars { get; set; }
@@ -18,7 +20,6 @@ namespace Infrastructure
         public DbSet<Store> Stores { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<SystemSetting> SystemSettings { get; set; }
-        public DbSet<LoginHistory> LoginHistories { get; set; }
         public DbSet<WorkScheduleConfig> WorkScheduleConfigs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -31,7 +32,6 @@ namespace Infrastructure
             WorkScheduleConfig.Configure(modelBuilder);
             Employee.Configure(modelBuilder);
             LoginHistory.Configure(modelBuilder);
-            TokenHistory.Configure(modelBuilder);
             Notification.Configure(modelBuilder);
             SystemSetting.Configure(modelBuilder);
 

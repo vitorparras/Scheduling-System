@@ -22,9 +22,8 @@ namespace Domain.Model
         [Required]
         public UserRolesEnum Roles { get; set; } = UserRolesEnum.None;
 
-        public virtual ICollection<TokenHistory> TokenHistories { get; set; } = new List<TokenHistory>();
-        public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
         public virtual ICollection<LoginHistory> LoginHistories { get; set; } = new List<LoginHistory>();
+        public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
         public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
         public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
         public virtual ICollection<Store> Stores { get; set; } = new List<Store>();
@@ -41,7 +40,7 @@ namespace Domain.Model
                 .IsUnique();
 
             modelBuilder.Entity<User>()
-                .HasMany(u => u.TokenHistories)
+                .HasMany(u => u.LoginHistories)
                 .WithOne(th => th.User)
                 .HasForeignKey(th => th.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -50,12 +49,6 @@ namespace Domain.Model
                 .HasMany(u => u.Notifications)
                 .WithOne(n => n.User)
                 .HasForeignKey(n => n.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.LoginHistories)
-                .WithOne(lh => lh.User)
-                .HasForeignKey(lh => lh.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<User>()

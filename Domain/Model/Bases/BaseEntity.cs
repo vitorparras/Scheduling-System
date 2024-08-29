@@ -7,18 +7,10 @@ namespace Domain.Model.Bases
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid Id { get; private set; }
+        public Guid Id { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public DateTime CreatedAt { get; private set; }
+        public DateTime CreatedAt { get;  set; } = DateTime.UtcNow;
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public DateTime UpdatedAt { get; private set; }
-
-        protected BaseEntity()
-        {
-            CreatedAt = DateTime.UtcNow;
-            UpdatedAt = DateTime.UtcNow;
-        }
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }
 }

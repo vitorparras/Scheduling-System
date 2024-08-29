@@ -30,7 +30,7 @@ namespace Application.Services
                 ArgumentNullException.ThrowIfNullOrEmpty(email);
 
                 var user = await _userRepository
-                    .FirstOrDefaultAsync(x => x.Email.Contains(email, StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefaultAsync(x => x.Email.ToLower().Equals(email.ToLower()));
 
                 return user != null ?
                     new GenericResponse<UserDTO>(_mapper.Map<UserDTO>(user)) :
@@ -50,7 +50,7 @@ namespace Application.Services
                 ArgumentNullException.ThrowIfNullOrEmpty(password);
 
                 var ret = await _userRepository.AnyAsync(x =>
-                      x.Email.Contains(user.Email, StringComparison.OrdinalIgnoreCase) &&
+                      x.Email.ToLower().Equals(user.Email.ToLower()) &&
                       x.Password == password);
 
                 return (ret) ?
@@ -99,7 +99,7 @@ namespace Application.Services
                 ArgumentNullException.ThrowIfNull(userDto);
                 var user = _mapper.Map<User>(userDto);
 
-                var exist = await _userRepository.FirstOrDefaultAsync(x => x.Email.Contains(user.Email, StringComparison.OrdinalIgnoreCase));
+                var exist = await _userRepository.FirstOrDefaultAsync(x => x.Email.ToLower().Equals(user.Email.ToLower()));
                 if (exist != null) return new GenericResponse<UserDTO>("User already exists", false);
 
                 user.Password = userDto.Password;

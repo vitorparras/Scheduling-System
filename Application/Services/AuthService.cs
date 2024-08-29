@@ -39,7 +39,7 @@ namespace Application.Services
                 var token = GenerateJwtToken(user.Data);
                 if (!token.Success) return new GenericResponse<string>(token.Erros);
 
-                var tokenHistory = await SaveTokenToHistoryAsync(user.Data.Id, token.Data);
+                var tokenHistory = await SaveLoginAsync(user.Data.Id, token.Data);
                 if (!tokenHistory.Success) return new GenericResponse<string>(tokenHistory.Erros);
 
                 return token;
@@ -116,22 +116,22 @@ namespace Application.Services
             }
         }
 
-        private async Task<GenericResponse<TokenHistory>> SaveTokenToHistoryAsync(Guid userId, string token)
+        private async Task<GenericResponse<LoginHistory>> SaveLoginAsync(Guid userId, string token)
         {
             try
             {
-                var tokenHistory = new TokenHistory
+                var tokenHistory = new LoginHistory
                 {
                     UserId = userId,
                     Token = token,
-                    IsValid = true
+                    IsValid = true,
                 };
 
                 var add = await _tokenHistoryRepository.AddAsync(tokenHistory);
 
                 return (add != null) ?
-                    new GenericResponse<TokenHistory>(add) :
-                    new GenericResponse<TokenHistory>("TokenHistory not saved", false);
+                    new GenericResponse<LoginHistory>(add) :
+                    new GenericResponse<LoginHistory>("TokenHistory not saved", false);
             }
             catch (Exception ex)
             {

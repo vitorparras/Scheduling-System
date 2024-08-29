@@ -1,5 +1,7 @@
-﻿using Infrastructure.Repository.Interface;
+﻿using Domain.Model.Bases;
+using Infrastructure.Repository.Interface;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Linq.Expressions;
 
 namespace Infrastructure.Repository
@@ -24,9 +26,30 @@ namespace Infrastructure.Repository
         public async Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate) =>
             await _dbSet.FirstOrDefaultAsync(predicate);
 
-        public async Task<int> SaveChangesAsync() =>
-            await _dbContext.SaveChangesAsync();
+        public async Task<int> SaveChangesAsync()
+        {
+            var now = DateTime.UtcNow;
 
+            foreach (var changedEntity in _dbContext.ChangeTracker.Entries())
+            {
+                if (changedEntity.Entity is BaseEntity entity)
+                {
+                    switch (changedEntity.State)
+                    {
+                        case EntityState.Added:
+                            entity.CreatedAt = now;
+                            entity.UpdatedAt = now;
+                            break;
+
+                        case EntityState.Modified:
+                            entity.UpdatedAt = now;
+                            break;
+                    }
+                }
+            }
+
+          return  await _dbContext.SaveChangesAsync();
+        }
         public async Task<TEntity> AddAsync(TEntity entity)
         {
             await _dbSet.AddAsync(entity);

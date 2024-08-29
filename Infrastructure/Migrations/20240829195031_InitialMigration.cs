@@ -60,6 +60,30 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "LoginHistories",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    IPAddress = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: true),
+                    IsValid = table.Column<bool>(type: "bit", nullable: false),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LoginHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_LoginHistories_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Notifications",
                 columns: table => new
                 {
@@ -228,59 +252,6 @@ namespace Infrastructure.Migrations
                         principalColumn: "Id");
                 });
 
-            migrationBuilder.CreateTable(
-                name: "LoginHistories",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LoginTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IPAddress = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: true),
-                    TokenId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_LoginHistories", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_LoginHistories_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TokenHistories",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LoginHistoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Token = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    IsValid = table.Column<bool>(type: "bit", nullable: false),
-                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TokenHistories", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TokenHistories_LoginHistories_LoginHistoryId",
-                        column: x => x.LoginHistoryId,
-                        principalTable: "LoginHistories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_TokenHistories_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_AppointmentHistories_AppointmentId",
                 table: "AppointmentHistories",
@@ -317,9 +288,9 @@ namespace Infrastructure.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LoginHistories_TokenId",
+                name: "IX_LoginHistories_Token",
                 table: "LoginHistories",
-                column: "TokenId");
+                column: "Token");
 
             migrationBuilder.CreateIndex(
                 name: "IX_LoginHistories_UserId",
@@ -347,21 +318,6 @@ namespace Infrastructure.Migrations
                 table: "SystemSettings",
                 column: "Key",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TokenHistories_LoginHistoryId",
-                table: "TokenHistories",
-                column: "LoginHistoryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TokenHistories_Token",
-                table: "TokenHistories",
-                column: "Token");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TokenHistories_UserId",
-                table: "TokenHistories",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
@@ -395,14 +351,6 @@ namespace Infrastructure.Migrations
                 principalTable: "Employees",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_LoginHistories_TokenHistories_TokenId",
-                table: "LoginHistories",
-                column: "TokenId",
-                principalTable: "TokenHistories",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />
@@ -412,20 +360,11 @@ namespace Infrastructure.Migrations
                 name: "FK_Employees_Appointments_ScheduleId",
                 table: "Employees");
 
-            migrationBuilder.DropForeignKey(
-                name: "FK_LoginHistories_Users_UserId",
-                table: "LoginHistories");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_TokenHistories_Users_UserId",
-                table: "TokenHistories");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_LoginHistories_TokenHistories_TokenId",
-                table: "LoginHistories");
-
             migrationBuilder.DropTable(
                 name: "AppointmentHistories");
+
+            migrationBuilder.DropTable(
+                name: "LoginHistories");
 
             migrationBuilder.DropTable(
                 name: "Notifications");
@@ -450,12 +389,6 @@ namespace Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Users");
-
-            migrationBuilder.DropTable(
-                name: "TokenHistories");
-
-            migrationBuilder.DropTable(
-                name: "LoginHistories");
         }
     }
 }
