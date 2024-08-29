@@ -1,10 +1,6 @@
 ﻿using Domain.Model.Bases;
-using System;
-using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Model
 {
@@ -17,7 +13,15 @@ namespace Domain.Model
         [Required]
         public string Value { get; set; }
 
+        [MaxLength(2000)]
         public string Description { get; set; }
-    }
 
+        
+        public static void Configure(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<SystemSetting>()
+                .HasIndex(ss => ss.Key)
+                .IsUnique();
+        }
+    }
 }

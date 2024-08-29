@@ -27,15 +27,11 @@ namespace API.Extensions
 
         public static void ConfigureMiddlewares(this WebApplication app)
         {
-
             app.UseSwagger()
                .UseSwaggerUI();
 
-
             app.UseMiddleware<JwtTokenValidationMiddleware>();
-
             app.UseHttpsRedirection();
-
             app.ImplementMigrations();
         }
 
@@ -57,12 +53,9 @@ namespace API.Extensions
 
         public static WebApplicationBuilder ConfigureContext(this WebApplicationBuilder builder)
         {
-            var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+            var connString = builder.Configuration.GetConnectionString("SqlServer");
             builder.Services.AddDbContext<SchedulerContext>(options => options
-                .UseMySql(connString, ServerVersion.AutoDetect(connString), options =>
-                {
-                    options.EnableStringComparisonTranslations();
-                })
+                .UseSqlServer(connString)
                 .EnableSensitiveDataLogging());
 
             return builder;
@@ -82,7 +75,5 @@ namespace API.Extensions
 
             return builder;
         }
-
-
     }
 }

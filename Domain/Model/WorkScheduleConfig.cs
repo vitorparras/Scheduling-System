@@ -1,7 +1,7 @@
-﻿using Domain.Model.Bases;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using Domain.Enum;
+using Domain.Model.Bases;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using Domain.Enum;
 
 namespace Domain.Model
 {
@@ -29,8 +29,16 @@ namespace Domain.Model
         [Required]
         public TimeSpan CleaningTime { get; set; }
 
-        
-        [ForeignKey(nameof(EmployeeId))]
         public virtual Employee Employee { get; set; }
+
+        // Método para configurações da model
+        public static void Configure(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<WorkScheduleConfig>()
+                .HasOne(wsc => wsc.Employee)
+                .WithOne(e => e.WorkScheduleConfig)
+                .HasForeignKey<WorkScheduleConfig>(wsc => wsc.EmployeeId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
     }
 }

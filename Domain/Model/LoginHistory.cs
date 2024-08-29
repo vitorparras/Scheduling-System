@@ -1,11 +1,6 @@
 ﻿using Domain.Model.Bases;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Model
 {
@@ -17,20 +12,29 @@ namespace Domain.Model
         [Required]
         public DateTime LoginTime { get; set; }
 
+        [StringLength(45)]
         public string IPAddress { get; set; }
 
-        public Guid? TokenId { get; set; } // Nullable in case the login wasn't token-based
+        public Guid? TokenId { get; set; }
 
-        [ForeignKey(nameof(UserId))]
         public virtual User User { get; set; }
 
-        [ForeignKey(nameof(TokenId))]
-        public virtual TokenHistory TokenHistory { get; set; } // Navigation property for token
+        public virtual TokenHistory TokenHistory { get; set; }
 
-        // Optional: Method to provide a string representation of the login history
-        public override string ToString()
+
+        public static void Configure(ModelBuilder modelBuilder)
         {
-            return $"Login ID: {Id}, User ID: {UserId}, Login Time: {LoginTime}, IP Address: {IPAddress}, Token ID: {TokenId}";
+            modelBuilder.Entity<LoginHistory>()
+                .HasOne(lh => lh.User)
+                .WithMany(u => u.LoginHistories)
+                .HasForeignKey(lh => lh.UserId)
+                .OnDelete(DeleteBehavior.Restrict); 
+
+            modelBuilder.Entity<LoginHistory>()
+                .HasOne(lh => lh.TokenHistory)
+                .WithMany()
+                .HasForeignKey(lh => lh.TokenId)
+                .OnDelete(DeleteBehavior.Restrict);  
         }
     }
 }

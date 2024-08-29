@@ -3,17 +3,19 @@ version: '3.8'
 # Use "docker-compose up --build"
 
 services:
-  mysql:
-    image: mysql:latest
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver-db
     environment:
-      MYSQL_ROOT_PASSWORD: my-secret-pw
-      MYSQL_DATABASE: mydb
-      MYSQL_USER: user
-      MYSQL_PASSWORD: userpw
+      SA_PASSWORD: "Strong@Passw0rd-H92q6DmeV5SWS2LTy161f"
+      ACCEPT_EULA: "Y"
+      MSSQL_DATABASE: "DatabaseName-Dev"
+      MSSQL_USER: "user-name-strong"           
+      MSSQL_PASSWORD: "UserPassw0rd-va7zmJn5MGM3iE8Z32h0i"  
     ports:
-      - "3306:3306"
+      - "1433:1433"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - sqlserver_data:/var/opt/mssql
 
 volumes:
-  mysql-data:
+  sqlserver_data:

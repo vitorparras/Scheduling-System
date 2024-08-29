@@ -1,30 +1,64 @@
 ﻿using Domain.Model.Bases;
-using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Model
 {
     public class Employee : BaseEntity
     {
+        [Required]
         public Guid ScheduleId { get; set; }
+
+        [Required]
         public Guid WorkScheduleConfigId { get; set; }
+
+        [Required]
         public Guid StoreId { get; set; }
+
+        [Required]
         public Guid UserId { get; set; }
 
-
-        [ForeignKey(nameof(ScheduleId))]
         public virtual Appointment Schedule { get; set; }
 
-        [ForeignKey(nameof(StoreId))]
         public virtual Store Store { get; set; }
 
-        [ForeignKey(nameof(UserId))]
         public virtual User User { get; set; }
 
-        [ForeignKey(nameof(WorkScheduleConfigId))]
         public virtual WorkScheduleConfig WorkScheduleConfig { get; set; }
 
-        // Collection of appointments related to the employee
         public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
+      
+        public static void Configure(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Employee>()
+                .HasOne(e => e.Schedule)
+                .WithMany()
+                .HasForeignKey(e => e.ScheduleId)
+                .OnDelete(DeleteBehavior.Restrict);  
+
+            modelBuilder.Entity<Employee>()
+                .HasOne(e => e.Store)
+                .WithMany(s => s.Employees)
+                .HasForeignKey(e => e.StoreId)
+                .OnDelete(DeleteBehavior.Restrict);  
+
+            modelBuilder.Entity<Employee>()
+                .HasOne(e => e.User)
+                .WithMany(u => u.Employees)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict); 
+
+            modelBuilder.Entity<Employee>()
+                .HasOne(e => e.WorkScheduleConfig)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Restrict);  
+
+            modelBuilder.Entity<Employee>()
+                .HasMany(e => e.Appointments)
+                .WithOne(a => a.Employee)
+                .HasForeignKey(a => a.EmployeeId)
+                .OnDelete(DeleteBehavior.Restrict);  
+        }
     }
 }

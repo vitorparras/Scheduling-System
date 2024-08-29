@@ -1,6 +1,6 @@
 ﻿using Domain.Model.Bases;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Model
 {
@@ -9,17 +9,21 @@ namespace Domain.Model
         [Required]
         public Guid UserId { get; set; }
 
-        [Required]
+        [Required, MaxLength(2000)]
         public string Message { get; set; }
 
         [Required]
         public bool IsRead { get; set; }
 
-        [Required]
-        public DateTime CreatedAt { get; set; }
-
-        [ForeignKey(nameof(UserId))]
         public virtual User User { get; set; }
-    }
 
+        public static void Configure(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany(u => u.Notifications)
+                .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+    }
 }
