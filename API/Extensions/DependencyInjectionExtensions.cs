@@ -27,11 +27,10 @@ namespace API.Extensions
 
         public static void ConfigureMiddlewares(this WebApplication app)
         {
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger()
-                   .UseSwaggerUI();
-            }
+
+            app.UseSwagger()
+               .UseSwaggerUI();
+
 
             app.UseMiddleware<JwtTokenValidationMiddleware>();
 
