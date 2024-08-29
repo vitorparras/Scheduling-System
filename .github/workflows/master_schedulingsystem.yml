@@ -61,4 +61,7 @@ jobs:
         with:
           app-name: 'SchedulingSystem'
           slot-name: 'Production'
-          package: myapp
+          package: .
+          
+
+
