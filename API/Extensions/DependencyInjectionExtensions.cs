@@ -14,24 +14,33 @@ namespace API.Extensions
         public static WebApplicationBuilder ConfigureBuilder(this WebApplicationBuilder builder)
         {
             builder.Services
-                  .AddEndpointsApiExplorer()
-                  .AddSwaggerGen();
+              .AddEndpointsApiExplorer()
+              .AddSwaggerGen();
 
             builder.ConfigureContext();
             builder.ConfigureRepositories();
             builder.ConfigureAutoMapper();
             builder.ConfigureServices();
 
+            
+            builder.ConfigureAuthentication();
+            builder.Services.AddAuthorization();
+
             return builder;
         }
 
         public static void ConfigureMiddlewares(this WebApplication app)
         {
-            app.UseSwagger()
-               .UseSwaggerUI();
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Scheduling System API"));
 
-            app.UseMiddleware<JwtTokenValidationMiddleware>();
             app.UseHttpsRedirection();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseMiddleware<JwtTokenValidationMiddleware>(); 
+
             app.ImplementMigrations();
         }
 

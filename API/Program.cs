@@ -2,14 +2,11 @@ using API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.ConfigureBuilder();
-builder.ConfigureAuthentication();
-builder.ConfigureSwagger();
-
+builder.ConfigureBuilder();  
 
 var app = builder.Build();
 
-app.ConfigureMiddlewares();
+app.ConfigureMiddlewares(); 
 app.ConfigureEndpoints();
 
 app.Run();

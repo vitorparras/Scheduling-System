@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/API/Properties/ServiceDependencies/SchedulingSystemApp/apis1.arm.json
+/API/Properties/serviceDependencies.local.json
+/API/Properties/serviceDependencies.SchedulingSystemApp.json
+/API/.config/dotnet-tools.json
