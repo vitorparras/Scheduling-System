@@ -1,4 +1,5 @@
-﻿using Domain.Model;
+﻿using Domain.DTO;
+using Domain.Model;
 using Infrastructure.Repository.Interface;
 
 namespace Infrastructure.Repository
@@ -18,10 +19,12 @@ namespace Infrastructure.Repository
             return UpdateAsync(tokenHistory);
         }
 
-        public async Task<bool> IsTokenValidAsync(string token)
+        public async Task<GenericResponse<bool>> IsTokenValidAsync(string token)
         {
             var exist = await GetTokenHistoryAsync(token);
-            return (exist != null && exist.IsValid);
+            return (exist is null) ?
+                new GenericResponse<bool>("Token Not Found", false) :
+                new GenericResponse<bool>(exist.IsValid);
         }
     }
 }

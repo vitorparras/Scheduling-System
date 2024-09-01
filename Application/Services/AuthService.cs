@@ -2,11 +2,6 @@
 using Domain.DTO;
 using Domain.Model;
 using Infrastructure.Repository.Interface;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace Application.Services
 {
@@ -14,16 +9,16 @@ namespace Application.Services
     {
         private readonly IUserService _userService;
         private readonly ITokenHistoryRepository _tokenHistoryRepository;
-        private readonly IConfiguration _configuration;
+        private readonly IJwtService _jwtService;
 
         public AuthService(
             ITokenHistoryRepository tokenHistoryRepository,
-            IConfiguration configuration,
-            IUserService userService)
+            IUserService userService,
+            IJwtService jwtService)
         {
             _tokenHistoryRepository = tokenHistoryRepository ?? throw new ArgumentNullException(nameof(tokenHistoryRepository));
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
         }
 
         public async Task<GenericResponse<string>> LoginAsync(string email, string password)
@@ -36,7 +31,7 @@ namespace Application.Services
                 var passValid = await _userService.VerifyPasswordAsync(user.Data, password);
                 if (!passValid.Success) return new GenericResponse<string>(passValid.Erros);
 
-                var token = GenerateJwtToken(user.Data);
+                var token = _jwtService.GenerateJwtToken(user.Data);
                 if (!token.Success) return new GenericResponse<string>(token.Erros);
 
                 var tokenHistory = await SaveLoginAsync(user.Data.Id, token.Data);
@@ -57,6 +52,8 @@ namespace Application.Services
                 var tokenHistory = await _tokenHistoryRepository.GetTokenHistoryAsync(token) ?? throw new UnauthorizedAccessException("Invalid token.");
                 if (tokenHistory is null) return new GenericResponse<string>("Token Not Found", false);
 
+
+
                 await _tokenHistoryRepository.InvalidateTokenAsync(tokenHistory);
 
                 return new GenericResponse<string>("User logged out successfully");
@@ -64,55 +61,6 @@ namespace Application.Services
             catch (Exception ex)
             {
                 throw new ApplicationException("An error occurred while we try to log the user out", ex);
-            }
-        }
-
-        private GenericResponse<string> GenerateJwtToken(UserDTO user)
-        {
-            try
-            {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(_configuration["Jwt:SecretKey"]);
-                var tokenDescriptor = new SecurityTokenDescriptor
-                {
-                    Subject = new ClaimsIdentity([
-                        new Claim(ClaimTypes.Name, user.Id.ToString()),
-                        new Claim(ClaimTypes.Email, user.Email)
-                    ]),
-                    Expires = DateTime.UtcNow.AddHours(1),
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                };
-                var token = tokenHandler.CreateToken(tokenDescriptor);
-                return new GenericResponse<string>(tokenHandler.WriteToken(token));
-            }
-            catch (Exception ex)
-            {
-                throw new ApplicationException("An error occurred while we try to generate jwt token", ex);
-            }
-        }
-
-        public async Task<GenericResponse<bool>> TokenIsValid(string token)
-        {
-            try
-            {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(_configuration["Jwt:SecretKey"]);
-                tokenHandler.ValidateToken(token, new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ClockSkew = TimeSpan.Zero
-                }, out SecurityToken validatedToken);
-
-                var tokenValid = await _tokenHistoryRepository.IsTokenValidAsync(token);
-
-                return new GenericResponse<bool>(validatedToken != null && tokenValid);
-            }
-            catch (Exception ex)
-            {
-                throw new ApplicationException("An error occurred while we try to generate jwt token", ex);
             }
         }
 

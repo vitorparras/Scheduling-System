@@ -1,11 +1,10 @@
-﻿using Domain.Model;
+﻿using Domain.DTO;
+using Domain.Model;
 
 namespace Infrastructure.Repository.Interface
 {
-    public interface ITokenHistoryRepository: IGenericRepository<LoginHistory>
+    public interface ITokenHistoryRepository : IGenericRepository<LoginHistory>
     {
-        Task<LoginHistory> GetTokenHistoryAsync(string token);
-        Task InvalidateTokenAsync(LoginHistory tokenHistory);
-        Task<bool> IsTokenValidAsync(string token);
+        Task<GenericResponse<bool>> IsTokenValidAsync(string token);
     }
 }

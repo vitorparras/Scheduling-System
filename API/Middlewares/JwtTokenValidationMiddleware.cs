@@ -30,9 +30,9 @@ namespace API.Middlewares
             }
 
             using var scope = _serviceScopeFactory.CreateScope();
-            var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
+            var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
 
-            var isValid = await authService.TokenIsValid(token);
+            var isValid = await jwtService.TokenIsValid(token);
 
             if (!isValid.Data)
             {

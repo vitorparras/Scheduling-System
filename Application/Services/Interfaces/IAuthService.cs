@@ -6,6 +6,5 @@ namespace Application.Services.Interfaces
     {
         Task<GenericResponse<string>> LoginAsync(string email, string password);
         Task<GenericResponse<string>> LogoutAsync(string token);
-        Task<GenericResponse<bool>> TokenIsValid(string token);
     }
 }
