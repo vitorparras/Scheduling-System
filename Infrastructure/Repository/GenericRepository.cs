@@ -1,7 +1,6 @@
 ﻿using Domain.Model.Bases;
 using Infrastructure.Repository.Interface;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Linq.Expressions;
 
 namespace Infrastructure.Repository
@@ -17,16 +16,63 @@ namespace Infrastructure.Repository
             _dbSet = _dbContext.Set<TEntity>();
         }
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync() =>
-            await _dbSet.ToListAsync();
+        public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default) => 
+            await _dbSet.AnyAsync(predicate, cancellationToken);
 
-        public async Task<IEnumerable<TEntity>> ListAsync(Expression<Func<TEntity, bool>> predicate) =>
-            await _dbSet.Where(predicate).ToListAsync();
+        public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default) =>
+            await _dbSet.ToListAsync(cancellationToken);
 
-        public async Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate) =>
-            await _dbSet.FirstOrDefaultAsync(predicate);
+        public async Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default) => 
+            await _dbSet.FirstOrDefaultAsync(predicate, cancellationToken);
 
-        public async Task<int> SaveChangesAsync()
+        public async Task<IEnumerable<TEntity>> WhereAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default) =>
+            await _dbSet.Where(predicate).ToListAsync(cancellationToken);
+
+        public async Task<TEntity?> FindAsync(object[] keyValues, CancellationToken cancellationToken = default) =>
+            await _dbSet.FindAsync(keyValues, cancellationToken);
+
+        public async Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default) =>
+            await _dbSet.CountAsync(predicate, cancellationToken);
+
+        public async Task<IEnumerable<TEntity>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default) =>
+            await _dbSet.Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+        public async Task UpdatePartialAsync(TEntity entity, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] updatedProperties)
+        {
+            var entry = _dbContext.Entry(entity);
+            _dbSet.Attach(entity);
+
+            foreach (var property in updatedProperties)
+            {
+                entry.Property(property).IsModified = true;
+            }
+
+            await SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            await _dbSet.AddAsync(entity, cancellationToken);
+            await SaveChangesAsync(cancellationToken);
+            return entity;
+        }
+
+        public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            _dbSet.Update(entity);
+            await SaveChangesAsync(cancellationToken);
+            return entity;
+        }
+
+        public async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            _dbSet.Remove(entity);
+            return await SaveChangesAsync(cancellationToken) > 0;
+        }
+
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             var now = DateTime.UtcNow;
 
@@ -34,45 +80,24 @@ namespace Infrastructure.Repository
             {
                 if (changedEntity.Entity is BaseEntity entity)
                 {
-                    switch (changedEntity.State)
+                    if (changedEntity.State == EntityState.Added)
                     {
-                        case EntityState.Added:
-                            entity.CreatedAt = now;
-                            entity.UpdatedAt = now;
-                            break;
-
-                        case EntityState.Modified:
-                            entity.UpdatedAt = now;
-                            break;
+                        entity.CreatedAt = now;
+                        entity.UpdatedAt = now;
+                    }
+                    else if (changedEntity.State == EntityState.Modified)
+                    {
+                        entity.UpdatedAt = now;
                     }
                 }
             }
 
-          return  await _dbContext.SaveChangesAsync();
+            if (_dbContext.ChangeTracker.HasChanges())
+            {
+                return await _dbContext.SaveChangesAsync(cancellationToken);
+            }
+
+            return 0;
         }
-        public async Task<TEntity> AddAsync(TEntity entity)
-        {
-            await _dbSet.AddAsync(entity);
-            await SaveChangesAsync();
-            return entity;
-        }
-
-        public async Task<TEntity> UpdateAsync(TEntity entity)
-        {
-            _dbSet.Update(entity);
-            await SaveChangesAsync();
-            return entity;
-        }
-
-        public async Task<bool> RemoveAsync(TEntity entity)
-        {
-            _dbSet.Remove(entity);
-            return await SaveChangesAsync() > 0;
-        }
-
-        public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate) => await _dbSet.AnyAsync(predicate);
-
-
-
     }
 }

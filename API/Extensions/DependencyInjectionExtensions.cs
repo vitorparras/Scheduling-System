@@ -21,8 +21,8 @@ namespace API.Extensions
             builder.ConfigureRepositories();
             builder.ConfigureAutoMapper();
             builder.ConfigureServices();
+            builder.ConfigureSwagger();
 
-            
             builder.ConfigureAuthentication();
             builder.Services.AddAuthorization();
 
@@ -32,7 +32,7 @@ namespace API.Extensions
         public static void ConfigureMiddlewares(this WebApplication app)
         {
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Scheduling System API"));
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
 
@@ -54,7 +54,7 @@ namespace API.Extensions
         public static WebApplicationBuilder ConfigureRepositories(this WebApplicationBuilder builder)
         {
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            builder.Services.AddScoped<ITokenHistoryRepository, TokenHistoryRepository>();
+            builder.Services.AddScoped<ILoginRepository, LoginRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
 
             return builder;

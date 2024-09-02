@@ -8,20 +8,20 @@ namespace Application.Services
     public class AuthService : IAuthService
     {
         private readonly IUserService _userService;
-        private readonly ITokenHistoryRepository _tokenHistoryRepository;
+        private readonly ILoginRepository _loginRepository;
         private readonly IJwtService _jwtService;
 
         public AuthService(
-            ITokenHistoryRepository tokenHistoryRepository,
+            ILoginRepository tokenHistoryRepository,
             IUserService userService,
             IJwtService jwtService)
         {
-            _tokenHistoryRepository = tokenHistoryRepository ?? throw new ArgumentNullException(nameof(tokenHistoryRepository));
+            _loginRepository = tokenHistoryRepository ?? throw new ArgumentNullException(nameof(tokenHistoryRepository));
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
         }
 
-        public async Task<GenericResponse<string>> LoginAsync(string email, string password)
+        public async Task<GenericResponse<string>> LoginAsync(string email, string password, string ip)
         {
             try
             {
@@ -34,7 +34,7 @@ namespace Application.Services
                 var token = _jwtService.GenerateJwtToken(user.Data);
                 if (!token.Success) return new GenericResponse<string>(token.Erros);
 
-                var tokenHistory = await SaveLoginAsync(user.Data.Id, token.Data);
+                var tokenHistory = await SaveLoginAsync(user.Data.Id, token.Data, ip);
                 if (!tokenHistory.Success) return new GenericResponse<string>(tokenHistory.Erros);
 
                 return token;
@@ -49,12 +49,11 @@ namespace Application.Services
         {
             try
             {
-                var tokenHistory = await _tokenHistoryRepository.GetTokenHistoryAsync(token) ?? throw new UnauthorizedAccessException("Invalid token.");
-                if (tokenHistory is null) return new GenericResponse<string>("Token Not Found", false);
+                var loginHistory = await _loginRepository.GetLoginHistoryByTokenAsync(token);
+                if (loginHistory == null)
+                    return new GenericResponse<string>("Token Not Found", false);
 
-
-
-                await _tokenHistoryRepository.InvalidateTokenAsync(tokenHistory);
+                await _loginRepository.InvalidateTokenAsync(loginHistory);
 
                 return new GenericResponse<string>("User logged out successfully");
             }
@@ -64,7 +63,7 @@ namespace Application.Services
             }
         }
 
-        private async Task<GenericResponse<LoginHistory>> SaveLoginAsync(Guid userId, string token)
+        private async Task<GenericResponse<LoginHistory>> SaveLoginAsync(Guid userId, string token, string ip)
         {
             try
             {
@@ -73,9 +72,11 @@ namespace Application.Services
                     UserId = userId,
                     Token = token,
                     IsValid = true,
+                    IPAddress = ip,
+                    ExpiryDate = DateTime.UtcNow.AddMinutes(50)
                 };
 
-                var add = await _tokenHistoryRepository.AddAsync(tokenHistory);
+                var add = await _loginRepository.AddAsync(tokenHistory);
 
                 return (add != null) ?
                     new GenericResponse<LoginHistory>(add) :

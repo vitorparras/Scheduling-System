@@ -1,5 +1,6 @@
 ﻿using Application.Services.Interfaces;
 using Domain.DTO;
+using Infrastructure.Repository;
 using Infrastructure.Repository.Interface;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -16,15 +17,16 @@ namespace Application.Services
     public class JwtService : IJwtService
     {
         private readonly IConfiguration _configuration;
-        private readonly ITokenHistoryRepository _tokenHistoryRepository;
+        private readonly ILoginRepository _loginRepository;
+
 
 
         public JwtService(
             IConfiguration configuration,
-            ITokenHistoryRepository tokenHistoryRepository)
+            ILoginRepository loginRepository)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            _tokenHistoryRepository = tokenHistoryRepository ?? throw new ArgumentNullException(nameof(tokenHistoryRepository));
+            _loginRepository = loginRepository ?? throw new ArgumentNullException(nameof(loginRepository));
         }
 
         public GenericResponse<string> GenerateJwtToken(UserDTO user)
@@ -69,7 +71,7 @@ namespace Application.Services
                     ClockSkew = TimeSpan.Zero
                 });
 
-                var tokenValid = await _tokenHistoryRepository.IsTokenValidAsync(token);
+                var tokenValid = await IsTokenValidAsync(token);
                 if (!tokenValid.Success) return new GenericResponse<bool>("Token is not valid", false);
 
                 return new GenericResponse<bool>(tokenValidate.IsValid && tokenValid.Data);
@@ -78,6 +80,14 @@ namespace Application.Services
             {
                 throw new ApplicationException("An error occurred while we try to generate jwt token", ex);
             }
+        }
+
+        private async Task<GenericResponse<bool>> IsTokenValidAsync(string token)
+        {
+            var loginHistory = await _loginRepository.GetLoginHistoryByTokenAsync(token);
+            return loginHistory == null ?
+                new GenericResponse<bool>("Token Not Found", false) :
+                new GenericResponse<bool>(loginHistory.IsValid);
         }
     }
 }
