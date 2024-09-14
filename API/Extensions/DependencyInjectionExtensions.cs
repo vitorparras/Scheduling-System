@@ -22,6 +22,7 @@ namespace API.Extensions
             builder.ConfigureAutoMapper();
             builder.ConfigureServices();
             builder.ConfigureSwagger();
+            builder.ConfigureCors();
 
             builder.ConfigureAuthentication();
             builder.Services.AddAuthorization();
@@ -39,7 +40,8 @@ namespace API.Extensions
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseMiddleware<JwtTokenValidationMiddleware>(); 
+            app.UseMiddleware<JwtTokenValidationMiddleware>();
+            app.UseCors("AllowAll");
 
             app.ImplementMigrations();
         }
@@ -49,6 +51,21 @@ namespace API.Extensions
             using var scope = app.Services.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<SchedulerContext>();
             dbContext.Database.Migrate();
+        }
+
+        public static WebApplicationBuilder ConfigureCors(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll",
+                    builder =>
+                    {
+                        builder.AllowAnyOrigin()
+                               .AllowAnyMethod()
+                               .AllowAnyHeader();
+                    });
+            });
+            return builder;
         }
 
         public static WebApplicationBuilder ConfigureRepositories(this WebApplicationBuilder builder)

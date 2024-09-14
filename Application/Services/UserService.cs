@@ -27,7 +27,7 @@ namespace Application.Services
         {
             try
             {
-                ArgumentNullException.ThrowIfNullOrEmpty(email);
+                ArgumentException.ThrowIfNullOrEmpty(email);
 
                 var user = await _userRepository
                     .FirstOrDefaultAsync(x => x.Email.ToLower().Equals(email.ToLower()));
@@ -46,8 +46,8 @@ namespace Application.Services
         {
             try
             {
+                ArgumentException.ThrowIfNullOrEmpty(password);
                 ArgumentNullException.ThrowIfNull(user);
-                ArgumentNullException.ThrowIfNullOrEmpty(password);
 
                 var ret = await _userRepository.AnyAsync(x =>
                       x.Email.ToLower().Equals(user.Email.ToLower()) &&

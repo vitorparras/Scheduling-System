@@ -21,14 +21,14 @@ namespace Application.Services
             _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
         }
 
-        public async Task<GenericResponse<string>> LoginAsync(string email, string password, string ip)
+        public async Task<GenericResponse<string>> LoginAsync(LoginDTO login, string ip)
         {
             try
             {
-                var user = await _userService.GetByEmailAsync(email);
+                var user = await _userService.GetByEmailAsync(login.Email);
                 if (!user.Success) return new GenericResponse<string>(user.Erros);
 
-                var passValid = await _userService.VerifyPasswordAsync(user.Data, password);
+                var passValid = await _userService.VerifyPasswordAsync(user.Data, login.Password);
                 if (!passValid.Success) return new GenericResponse<string>(passValid.Erros);
 
                 var token = _jwtService.GenerateJwtToken(user.Data);

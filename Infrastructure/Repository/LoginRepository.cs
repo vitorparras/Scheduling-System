@@ -18,6 +18,6 @@ namespace Infrastructure.Repository
         {
             loginHistory.IsValid = false;
             await UpdateAsync(loginHistory);
-        }
+       }
     }
 }

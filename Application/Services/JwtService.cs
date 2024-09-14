@@ -1,16 +1,11 @@
 ﻿using Application.Services.Interfaces;
 using Domain.DTO;
-using Infrastructure.Repository;
 using Infrastructure.Repository.Interface;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services
 {
@@ -18,8 +13,6 @@ namespace Application.Services
     {
         private readonly IConfiguration _configuration;
         private readonly ILoginRepository _loginRepository;
-
-
 
         public JwtService(
             IConfiguration configuration,
